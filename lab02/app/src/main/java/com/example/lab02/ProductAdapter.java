@@ -13,10 +13,10 @@ import androidx.annotation.Nullable;
 import java.text.DateFormat;
 import java.util.ArrayList;
 
-public class productAdapter extends ArrayAdapter<Product> {
+public class ProductAdapter extends ArrayAdapter<Product> {
     private ArrayList<Product> productList = new ArrayList<>();
 
-    public productAdapter(@NonNull Context context, int resource, ArrayList<Product> productList) {
+    public ProductAdapter(@NonNull Context context, int resource, ArrayList<Product> productList) {
         super(context, resource, productList);
         this.productList = productList;
     }
@@ -50,7 +50,8 @@ public class productAdapter extends ArrayAdapter<Product> {
         DateFormat df = DateFormat.getDateInstance();
         String strDate = df.format(productList.get(position).getReceiptDate());
         receiptDate.setText(strDate);
-        price.setText(String.valueOf(productList.get(position).getPrice()) + "$");
+        String priceString = String.format("%.2f", productList.get(position).getPrice());
+        price.setText(priceString + "$");
 
         quantity.setText(String.valueOf("Available: " + productList.get(position).getQuantity()));
         return convertView;

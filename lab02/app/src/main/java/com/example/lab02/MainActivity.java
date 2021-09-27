@@ -7,18 +7,17 @@ import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     ArrayList<Product> products = new ArrayList<>();
-    productAdapter adapter;
+    ProductAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         fillList(15);
         ListView productList = (ListView)findViewById(R.id.productList);
-        adapter = new productAdapter(getApplicationContext(),
+        adapter = new ProductAdapter(getApplicationContext(),
                 R.layout.list_item_view, products);
         productList.setAdapter(adapter);
 
@@ -35,8 +34,11 @@ public class MainActivity extends AppCompatActivity {
     }
     private void fillList(int numberOfProducts){
         for (int i = 0; i < numberOfProducts; i++){
+            Random r = new Random();
+            float random = 0 + r.nextFloat() * (100 - 0);
+            int randomQuantity = r.nextInt(100);
             products.add(new Product("Product " + i, new Date(101,
-                    1, 1), 5, (float)30.5));
+                    1, 1), randomQuantity, random));
         }
     }
 
@@ -50,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         AdapterView.AdapterContextMenuInfo i = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-
         switch (item.getItemId()){
             case R.id.productPage:
                 Toast.makeText(this, "Page", Toast.LENGTH_SHORT).show();
