@@ -6,7 +6,8 @@
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.25729166666666664" />
         <entry key="app/src/main/res/drawable/drawable.xml" value="0.25729166666666664" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.25729166666666664" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.1503623188405797" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.16319501754009727" />
+        <entry key="app/src/main/res/layout/activity_product.xml" value="0.2124815430489134" />
         <entry key="app/src/main/res/layout/list_item.xml" value="0.18174609451250043" />
         <entry key="app/src/main/res/layout/list_item_view.xml" value="0.1608409747031277" />
         <entry key="app/src/main/res/layout/product_activity.xml" value="0.11822916666666666" />

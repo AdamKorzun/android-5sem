@@ -13,9 +13,11 @@
         android:id="@+id/productList"
         android:dividerHeight="10dp"
         android:divider="@color/white"
-        android:layout_marginTop="10dp"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:clipToPadding="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -23,6 +25,7 @@
 
     </ListView>
     <LinearLayout
+
         android:id="@+id/addDeleteButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,9 +36,19 @@
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_weight="1"
-            android:layout_margin="0dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="10dp"            android:textSize="16sp"
+            android:text="Add">
+        </Button>
+        <Button
+            android:id="@+id/sortButton"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
             android:textSize="16sp"
-            android:text="+">
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="5dp"
+            android:text="Sort">
 
         </Button>
 
