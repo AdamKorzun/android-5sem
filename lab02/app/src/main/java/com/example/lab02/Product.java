@@ -1,8 +1,9 @@
 package com.example.lab02;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Product {
+public class Product implements  Serializable{
     private String name;
     private Date receiptDate;
     private int quantity;
@@ -48,4 +49,5 @@ public class Product {
     public void setPrice(float price) {
         this.price = price;
     }
+
 }

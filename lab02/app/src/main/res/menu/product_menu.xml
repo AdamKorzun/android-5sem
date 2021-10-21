@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/productPage"
-        android:title="Page"/>
+
     <item
         android:id="@+id/deleteProduct"
         android:title="Delete"/>
