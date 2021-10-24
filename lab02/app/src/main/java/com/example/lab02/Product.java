@@ -2,6 +2,7 @@ package com.example.lab02;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 public class Product implements  Serializable{
     private String name;
@@ -50,4 +51,16 @@ public class Product implements  Serializable{
         this.price = price;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return quantity == product.quantity && Float.compare(product.price, price) == 0 && Objects.equals(name, product.name) && Objects.equals(receiptDate, product.receiptDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, receiptDate, quantity, price);
+    }
 }

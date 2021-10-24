@@ -15,7 +15,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 
 public class ProductAdapter extends ArrayAdapter<Product> {
-    private ArrayList<Product> productList = new ArrayList<>();
+    private ArrayList<Product> productList;
 
     public ProductAdapter(@NonNull Context context, int resource, ArrayList<Product> productList) {
         super(context, resource, productList);
@@ -24,7 +24,6 @@ public class ProductAdapter extends ArrayAdapter<Product> {
 //    @Override
 //    public void notifyDataSetChanged() {
 //        super.notifyDataSetChanged();
-//        Log.d("FOO", "item count: " + getCount());
 //    }
 
 
@@ -36,8 +35,6 @@ public class ProductAdapter extends ArrayAdapter<Product> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-//        System.out.println("YOUYOUYOYOYOYOYOYOYO");
-        ;
         if (convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_view, parent,
                     false);
@@ -54,7 +51,7 @@ public class ProductAdapter extends ArrayAdapter<Product> {
         String priceString = String.format("%.2f", productList.get(position).getPrice());
         price.setText(priceString + "$");
 
-        quantity.setText(String.valueOf("Available: " + productList.get(position).getQuantity()));
+        quantity.setText("Available: " + productList.get(position).getQuantity());
         return convertView;
     }
 

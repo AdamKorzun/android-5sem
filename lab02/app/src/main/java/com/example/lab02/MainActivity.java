@@ -1,6 +1,6 @@
 package com.example.lab02;
 
-import androidx.activity.result.ActivityResultCallback;
+//import androidx.activity.result.ActivityResultCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,10 +8,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
+//import android.os.Environment;
 import android.os.ParcelFileDescriptor;
-import android.provider.DocumentsContract;
-import android.util.JsonReader;
+//import android.provider.DocumentsContract;
+//import android.util.JsonReader;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,17 +25,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
+//import java.io.File;
+//import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
+//import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
+//import java.io.OutputStreamWriter;
+//import java.text.ParseException;
+//import java.text.SimpleDateFormat;
+//import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -56,18 +56,16 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ProductAdapter(getApplicationContext(),
                 R.layout.list_item_view, products);
         productList.setAdapter(adapter);
-        productList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getApplicationContext(),  product_activity.class);
-                intent.putExtra("Name", adapter.getItem(i).getName());
-                intent.putExtra("Price", adapter.getItem(i).getPrice());
-                intent.putExtra("Quantity", adapter.getItem(i).getQuantity());
-                intent.putExtra("ReceiptDate", adapter.getItem(i).getReceiptDate());
-                startActivity(intent);
+        productList.setOnItemClickListener((adapterView, view, i, l) -> {
+            Intent intent = new Intent(getApplicationContext(),  product_activity.class);
+//                intent.putExtra("Name", adapter.getItem(i).getName());
+//                intent.putExtra("Price", adapter.getItem(i).getPrice());
+//                intent.putExtra("Quantity", adapter.getItem(i).getQuantity());
+//                intent.putExtra("ReceiptDate", adapter.getItem(i).getReceiptDate());
+            intent.putExtra("Product",adapter.getItem(i));
+            startActivityForResult(intent, 100);
 
 
-            }
         });
         Button sortButton = findViewById(R.id.sortButton);
         sortButton.setOnClickListener(sortButtonHandler);
@@ -88,14 +86,11 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         Button addButton = findViewById(R.id.addButton);
-        addButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType( "*/*");
-                startActivityForResult(intent, 10);
+        addButton.setOnClickListener(view -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType( "*/*");
+            startActivityForResult(intent, 10);
 
-            }
         });
         registerForContextMenu(productList);
     }
@@ -114,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    private View.OnClickListener sortButtonHandler = new View.OnClickListener() {
+    private final View.OnClickListener sortButtonHandler = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             ArrayList<Product> productsToHide = new ArrayList<>();
@@ -122,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
                 Product tempPr = adapter.getItem(i);
                 System.out.println(tempPr.getName());
                 Date currentTime = Calendar.getInstance().getTime();
-                long diffInMillies = Math.abs(currentTime.getTime() - tempPr.getReceiptDate().getTime());
-                long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+                long diffInms = Math.abs(currentTime.getTime() - tempPr.getReceiptDate().getTime());
+                long diff = TimeUnit.DAYS.convert(diffInms, TimeUnit.MILLISECONDS);
                 if (diff < 31){
                     productsToHide.add(tempPr);
 //                    System.out.println(tempPr.getReceiptDate() + "\n" + diff + "\n");
@@ -154,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         AdapterView.AdapterContextMenuInfo i = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
         switch (item.getItemId()){
-
             case R.id.deleteProduct:
                 products.remove(i.position);
                 adapter.notifyDataSetChanged();
@@ -180,6 +174,24 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = data.getData();
             alterDocument(uri);
 
+        }
+        if (requestCode == 100) {
+            Bundle extras = data.getExtras();
+            Product initProduct = (Product)extras.get("InitProduct");
+            Product newProduct = (Product)extras.get("NewProduct");
+            if (!initProduct.equals(newProduct)){
+                for (Product pr : products){
+                    System.out.println(initProduct);
+                    if (pr.equals(initProduct)){
+                        pr.setName(newProduct.getName());
+                        pr.setPrice(newProduct.getPrice());
+                        pr.setReceiptDate(newProduct.getReceiptDate());
+                        pr.setQuantity(newProduct.getQuantity());
+                        adapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

@@ -11,5 +11,5 @@
     <color name="grey">#202020</color>
     <color name="orange">#FFBC00</color>
     <color name="blue"> #006fb2</color>
-
+    <color name="mid_grey"> #808080</color>
 </resources>

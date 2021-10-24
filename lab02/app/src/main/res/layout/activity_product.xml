@@ -14,8 +14,9 @@
             android:layout_height="0dp"
             android:background="@drawable/background"
             android:layout_weight="7"/>
-        <TextView
+        <EditText
             android:id="@+id/productNameView"
+            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:text="stringName"
@@ -35,8 +36,10 @@
                 android:text="@string/price"
                 android:textColor="@color/black"
                 android:textSize="24sp" />
-            <TextView
+            <EditText
                 android:id="@+id/productPriceView"
+                android:background="@android:color/transparent"
+                android:inputType="number"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:textColor="@color/black"
@@ -55,8 +58,9 @@
                 android:text="@string/date_of_receipt"
                 android:textColor="@color/black"
                 android:textSize="24sp" />
-            <TextView
+            <EditText
                 android:id="@+id/productReceiptDateView"
+                android:background="@android:color/transparent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
@@ -74,13 +78,24 @@
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textSize="24sp" />
-            <TextView
+            <EditText
                 android:id="@+id/productQuantityView"
                 android:layout_width="match_parent"
+                android:background="@android:color/transparent"
                 android:layout_height="wrap_content"
+                android:inputType="number"
                 android:textColor="@color/black"
                 android:textSize="24sp" />
         </LinearLayout>
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:text="Save"
+            android:textSize="20sp"
+            android:backgroundTint="@color/mid_grey"
+            android:layout_weight="1">
 
+        </Button>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
