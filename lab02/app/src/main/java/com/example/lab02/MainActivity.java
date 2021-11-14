@@ -1,6 +1,9 @@
 package com.example.lab02;
 
-//import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +41,7 @@ import java.io.InputStreamReader;
 //import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
@@ -46,11 +50,44 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
     ArrayList<Product> products = new ArrayList<>();
     ProductAdapter adapter;
+    ArrayList<Product> productsToHide = new ArrayList<>();
+    boolean sorted = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        ActivityResultLauncher fileLoadLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (ActivityResultCallback) result -> {
+            ActivityResult res = (ActivityResult)result;
+            if (res.getResultCode()  == RESULT_OK) {
+                Uri fileUri = res.getData().getData();
+                readTextFromUri(fileUri);
 
+            }
+        });
+        ActivityResultLauncher productChangeLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback() {
+            @Override
+            public void onActivityResult(Object result) {
+                ActivityResult res = (ActivityResult)result;
+                if (res.getResultCode() == RESULT_OK) {
+                    Bundle extras = res.getData().getExtras();
+                    Product initProduct = (Product)extras.get("InitProduct");
+                    Product newProduct = (Product)extras.get("NewProduct");
+                    if (!initProduct.equals(newProduct)){
+                        for (Product pr : products){
+                            System.out.println(initProduct);
+                            if (pr.equals(initProduct)){
+                                pr.setName(newProduct.getName());
+                                pr.setPrice(newProduct.getPrice());
+                                pr.setReceiptDate(newProduct.getReceiptDate());
+                                pr.setQuantity(newProduct.getQuantity());
+                                adapter.notifyDataSetChanged();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        setContentView(R.layout.activity_main);
 //        fillList(15);
         ListView productList = findViewById(R.id.productList);
         adapter = new ProductAdapter(getApplicationContext(),
@@ -58,14 +95,8 @@ public class MainActivity extends AppCompatActivity {
         productList.setAdapter(adapter);
         productList.setOnItemClickListener((adapterView, view, i, l) -> {
             Intent intent = new Intent(getApplicationContext(),  product_activity.class);
-//                intent.putExtra("Name", adapter.getItem(i).getName());
-//                intent.putExtra("Price", adapter.getItem(i).getPrice());
-//                intent.putExtra("Quantity", adapter.getItem(i).getQuantity());
-//                intent.putExtra("ReceiptDate", adapter.getItem(i).getReceiptDate());
             intent.putExtra("Product",adapter.getItem(i));
-            startActivityForResult(intent, 100);
-
-
+            productChangeLauncher.launch(intent);
         });
         Button sortButton = findViewById(R.id.sortButton);
         sortButton.setOnClickListener(sortButtonHandler);
@@ -89,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         addButton.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType( "*/*");
-            startActivityForResult(intent, 10);
+            fileLoadLauncher.launch(intent);
 
         });
         registerForContextMenu(productList);
@@ -104,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
             long diffMil = TimeUnit.MILLISECONDS.convert(randomDay, TimeUnit.DAYS);
 
             ct = new Date(ct.getTime() - diffMil);
-//                    Calendar.getInstance().set(randomMonth, randomDay);
             products.add(new Product("Product " + i, ct, randomQuantity, random));
 
         }
@@ -112,28 +142,43 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener sortButtonHandler = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            ArrayList<Product> productsToHide = new ArrayList<>();
-            for (int i = 0; i < adapter.getCount(); i++){
-                Product tempPr = adapter.getItem(i);
-                System.out.println(tempPr.getName());
-                Date currentTime = Calendar.getInstance().getTime();
-                long diffInms = Math.abs(currentTime.getTime() - tempPr.getReceiptDate().getTime());
-                long diff = TimeUnit.DAYS.convert(diffInms, TimeUnit.MILLISECONDS);
-                if (diff < 31){
-                    productsToHide.add(tempPr);
-//                    System.out.println(tempPr.getReceiptDate() + "\n" + diff + "\n");
+            if (sorted){
+                for (Product pr : productsToHide){
+                    adapter.add(pr);
                 }
-                else {
-                    if (tempPr.getPrice() < 50){
+                productsToHide.clear();
+            }
+            else {
+                for (int i = 0; i < adapter.getCount(); i++){
+                    Product tempPr = adapter.getItem(i);
+                    System.out.println(tempPr.getName());
+                    Date currentTime = Calendar.getInstance().getTime();
+                    long diffInms = Math.abs(currentTime.getTime() - tempPr.getReceiptDate().getTime());
+                    long diff = TimeUnit.DAYS.convert(diffInms, TimeUnit.MILLISECONDS);
+                    if (diff < 31){
                         productsToHide.add(tempPr);
+//                    System.out.println(tempPr.getReceiptDate() + "\n" + diff + "\n");
                     }
+                    else {
+                        if (tempPr.getPrice() < 50){
+                            productsToHide.add(tempPr);
+                        }
+                    }
+
                 }
+                for (int i = 0; i < productsToHide.size(); i++){
+                    adapter.remove(productsToHide.get(i));
+                }
+                adapter.sort(new Comparator<Product>() {
+                    @Override
+                    public int compare(Product product, Product t1) {
+                        return (product.getName()).compareTo(t1.getName());
 
-            }
-            for (int i = 0; i < productsToHide.size(); i++){
-                adapter.remove(productsToHide.get(i));
+                    }
+                });
             }
 
+            sorted = !sorted;
             adapter.notifyDataSetChanged();
         }
     };
@@ -165,8 +210,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == 10 && resultCode == RESULT_OK) {
             Uri fileUri = data.getData();
-            String res = readTextFromUri(fileUri);
-            System.out.println(res);
+            readTextFromUri(fileUri);
 
         }
 
@@ -217,24 +261,23 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private String readTextFromUri(Uri uri)  {
+    private void readTextFromUri(Uri uri)  {
         StringBuilder stringBuilder = new StringBuilder();
         try (InputStream inputStream =
                      getContentResolver().openInputStream(uri);
              BufferedReader reader = new BufferedReader(
                      new InputStreamReader(Objects.requireNonNull(inputStream)))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-           JSONArray ja = new JSONArray(stringBuilder.toString());
-            products.clear();
-            for (int i = 0; i < ja.length(); i ++){
+             String line;
+             while ((line = reader.readLine()) != null) {
+                 stringBuilder.append(line);
+             }
+             JSONArray ja = new JSONArray(stringBuilder.toString());
+             products.clear();
+             for (int i = 0; i < ja.length(); i ++){
                 JSONObject jo = new JSONObject(ja.getString(i));
-
                 products.add(new Product(jo.getString("Name"), new Date(jo.getLong("Date")),
                         jo.getInt("Quantity"), (float)jo.getDouble("Price")));
-            }
+             }
         } catch (IOException | JSONException  e) {
             e.printStackTrace();
         }
@@ -242,6 +285,5 @@ public class MainActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         }
 
-        return stringBuilder.toString();
     }
 }

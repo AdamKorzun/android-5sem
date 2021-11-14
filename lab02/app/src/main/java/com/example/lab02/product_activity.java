@@ -46,7 +46,7 @@ public class product_activity extends AppCompatActivity {
             Intent returnIntent = new Intent();
             returnIntent.putExtra("InitProduct", initProduct);
             returnIntent.putExtra("NewProduct", pr);
-            setResult(100, returnIntent);
+            setResult(RESULT_OK, returnIntent);
             finish();
         });
     }
