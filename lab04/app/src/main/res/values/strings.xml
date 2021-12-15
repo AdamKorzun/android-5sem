@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">lab04</string>
+    <string name="start">start</string>
+    <string name="name">Name</string>
+    <string name="username">Username</string>
+    <string name="sort">SORT</string>
+</resources>

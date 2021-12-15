@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -32,6 +33,7 @@ import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AudioActivity extends AppCompatActivity {
     SeekBar mSeekBar;
@@ -81,7 +83,7 @@ public class AudioActivity extends AppCompatActivity {
                     pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
 
                 }
-                System.out.println(getPath(songUri));
+                getAllAudio();
             }
         });
         forwardFifteen.setOnClickListener(new View.OnClickListener() {
@@ -226,6 +228,24 @@ public class AudioActivity extends AppCompatActivity {
         mSeekbarUpdateHandler.removeCallbacks(runnable);
         mPlayer.release();
         finish();
+    }
+    public void getAllAudio(){
+        ArrayList audio=new ArrayList();
+        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/Music/");
+
+        System.out.println(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        Cursor c=getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
+        c.moveToFirst();
+        do
+        {
+            @SuppressLint("Range") String name=c.getString(c.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+            audio.add(name);
+
+        }
+        while(c.moveToNext());
+
+        System.out.println(audio);
+
     }
 
 }
