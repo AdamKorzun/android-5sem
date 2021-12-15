@@ -32,6 +32,7 @@ import androidx.core.content.ContextCompat;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,8 @@ public class AudioActivity extends AppCompatActivity {
     Handler mSeekbarUpdateHandler = new Handler();
     MediaPlayer mPlayer;
     GestureDetector gestureDetector;
+    int currentIndex;
+    ArrayList<MediaSongVid> songVideos;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,18 +60,12 @@ public class AudioActivity extends AppCompatActivity {
         next = findViewById(R.id.forwardButton);
         last = findViewById(R.id.backButton);
         Bundle extras = getIntent().getExtras();
-
-        System.out.println(extras.get("Filepath"));
-        Uri songUri = (Uri)extras.get("CurrentSong");
-        mPlayer =   MediaPlayer.create(getApplicationContext(), songUri);
+        songVideos = (ArrayList<MediaSongVid>)extras.get("MediaList");
+        currentIndex = extras.getInt("CurrentIndex");
+        MediaSongVid song = (MediaSongVid) extras.get("CurrentSong");
+        mPlayer =   MediaPlayer.create(getApplicationContext(), song.getUri());
         mPlayer.start();
-        Cursor returnCursor =
-                getContentResolver().query(songUri, null, null, null, null);
-
-        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-
-        returnCursor.moveToFirst();
-        songName.setText(returnCursor.getString(nameIndex));
+        setView(song);
         mSeekBar.setMax(mPlayer.getDuration());
         mSeekbarUpdateHandler.postDelayed(runnable, 0);
         pause.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +80,6 @@ public class AudioActivity extends AppCompatActivity {
                     pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
 
                 }
-                getAllAudio();
             }
         });
         forwardFifteen.setOnClickListener(new View.OnClickListener() {
@@ -127,9 +123,41 @@ public class AudioActivity extends AppCompatActivity {
             }
 
         });
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int i = currentIndex + 1;
+                while (i  < songVideos.size()){
+                    System.out.println(songVideos.get(i).getFormat());
+                    if (songVideos.get(i).getFormat().equals("mp3")){
+                        System.out.println("Hi");
+                        changeSong(i);
+                        currentIndex = i;
+                        break;
+                    }
+                    i += 1;
+                }
+            }
+        });
+        last.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int i = currentIndex - 1;
+                while (i  >= 0){
+                    System.out.println(songVideos.get(i).getFormat());
+                    if (songVideos.get(i).getFormat().equals("mp3")){
+                        System.out.println("Hi");
+
+                        changeSong(i);
+                        currentIndex = i;
+                        break;
+                    }
+                    i -= 1;
+                }
+            }
+        });
         ImageView iv = findViewById(R.id.songImage);
         final float[] x = new float[2];
-//        gestureDetector = new GestureDetector(AudioActivity.this, this);
         iv.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -147,10 +175,33 @@ public class AudioActivity extends AppCompatActivity {
                         float diff = x[1] - x[0];
                         if (diff > 150 ){
                             System.out.println("Swipe right");
+                            int i = currentIndex - 1;
+                            while (i  >= 0){
+                                System.out.println(songVideos.get(i).getFormat());
+                                if (songVideos.get(i).getFormat().equals("mp3")){
+                                    System.out.println("Hi");
+
+                                    changeSong(i);
+                                    currentIndex = i;
+                                    break;
+                                }
+                                i -= 1;
+                            }
                             return true;
                         }
                         else if(Math.abs(diff) > 150){
                             System.out.println("Swipe left");
+                            int i = currentIndex + 1;
+                            while (i  < songVideos.size()){
+                                System.out.println(songVideos.get(i).getFormat());
+                                if (songVideos.get(i).getFormat().equals("mp3")){
+                                    System.out.println("Hi");
+                                    changeSong(i);
+                                    currentIndex = i;
+                                    break;
+                                }
+                                i += 1;
+                            }
                             return true;
                         }
                     }
@@ -163,11 +214,30 @@ public class AudioActivity extends AppCompatActivity {
 //        NotificationCompat.Builder build = new NotificationCompat.Builder(this);
 //        Notification notification =build.build();
 //        NotificationManagerCompat.from(this).notify(1, notification);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationDialog();
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            notificationDialog();
+//        }
     }
+    private void changeSong(int index){
+        MediaSongVid item = songVideos.get(index);
+        setView(item);
+        mSeekbarUpdateHandler.removeCallbacks(runnable);
 
+        mPlayer.reset();
+        try {
+            mPlayer.setDataSource(getApplicationContext(), item.getUri());
+            mPlayer.prepare();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mSeekBar.setMax(mPlayer.getDuration());
+        mSeekbarUpdateHandler.postDelayed(runnable, 0);
+
+        mPlayer.start();
+        pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
+
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void notificationDialog() {
@@ -203,23 +273,9 @@ public class AudioActivity extends AppCompatActivity {
 
         }
     };
-    public String getPath(Uri uri) {
+    public void setView(MediaSongVid media){
+        songName.setText(media.getName());
 
-        String path = null;
-        String[] projection = { MediaStore.Files.FileColumns.DATA };
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-
-        if(cursor == null){
-            path = uri.getPath();
-        }
-        else{
-            cursor.moveToFirst();
-            int column_index = cursor.getColumnIndexOrThrow(projection[0]);
-            path = cursor.getString(column_index);
-            cursor.close();
-        }
-
-        return ((path == null || path.isEmpty()) ? (uri.getPath()) : path);
     }
     @Override
     public void onBackPressed()
@@ -229,23 +285,6 @@ public class AudioActivity extends AppCompatActivity {
         mPlayer.release();
         finish();
     }
-    public void getAllAudio(){
-        ArrayList audio=new ArrayList();
-        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/Music/");
 
-        System.out.println(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-        Cursor c=getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-        c.moveToFirst();
-        do
-        {
-            @SuppressLint("Range") String name=c.getString(c.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
-            audio.add(name);
-
-        }
-        while(c.moveToNext());
-
-        System.out.println(audio);
-
-    }
 
 }
