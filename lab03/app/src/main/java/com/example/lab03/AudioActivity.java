@@ -5,16 +5,13 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.database.Cursor;
+import android.content.Intent;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,7 +19,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -68,6 +64,10 @@ public class AudioActivity extends AppCompatActivity {
         setView(song);
         mSeekBar.setMax(mPlayer.getDuration());
         mSeekbarUpdateHandler.postDelayed(runnable, 0);
+//        Intent intent = new Intent(getApplicationContext(), MediaService.class);
+//        intent.setAction(MediaService.ACTION_PLAY);
+//        startService(intent);
+
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -254,15 +254,10 @@ public class AudioActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(notificationChannel);
         }
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        notificationBuilder.setAutoCancel(true)
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker("Tutorialspoint")
-                //.setPriority(Notification.PRIORITY_MAX)
-                .setContentTitle("sample notification")
-                .setContentText("This is sample notification")
-                .setContentInfo("Information");
+//        notificationBuilder.setSmallIcon(R.drawable.ic_launcher_background)
+//                .setContentTitle("Track title")
+//                .setContentText(" Artist")
+//                .setStyle(new Notification.MediaStyle().setMediaSession(setMediaController(mPlayer.getAudioSessionId())));
         notificationManager.notify(1, notificationBuilder.build());
     }
     private Runnable runnable = new Runnable() {

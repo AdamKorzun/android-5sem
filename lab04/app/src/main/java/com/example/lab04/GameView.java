@@ -1,6 +1,7 @@
 package com.example.lab04;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -19,13 +20,15 @@ public class GameView extends View {
     int ROWS = 5;
     private float cellSize, hMargin, vMargin;
     private Paint wallPaint, playerPaint,  exitPaint;
-    private static final float WALL_THICKNESS = 4;
+    private static final float WALL_THICKNESS = 7;
     private Random random;
     private float playerSize;
     private Cell player, exit;
+
+
     public GameView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
+        Constants.CURRENT_CONTEXT = context;
         wallPaint = new Paint();
         wallPaint.setColor(Color.BLACK);
         wallPaint.setStrokeWidth(WALL_THICKNESS);
@@ -44,12 +47,13 @@ public class GameView extends View {
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(Color.WHITE);
         drawMaze(canvas);
-        playerSize = (float)(cellSize  / 2.1);
-        canvas.drawCircle(cellSize / 2, cellSize /2, (float)(cellSize / 2.1), playerPaint);
-        canvas.drawRect(exit.col * cellSize,
-                exit.row * cellSize,
-                (exit.col + 1) * cellSize,
-                (exit.row + 1) * cellSize,
+
+        playerSize = (float)(cellSize  / 2.2);
+        canvas.drawCircle(player.col * cellSize + cellSize / 2, player.row * cellSize + cellSize /2, playerSize, playerPaint);
+        canvas.drawRect(exit.col * cellSize + WALL_THICKNESS,
+                exit.row * cellSize + WALL_THICKNESS,
+                (exit.col + 1) * cellSize - WALL_THICKNESS,
+                (exit.row + 1) * cellSize - WALL_THICKNESS,
                 exitPaint);
 
     }
@@ -96,6 +100,34 @@ public class GameView extends View {
             }
         }
     }
+    public void moveUp(){
+        if (!player.topWall){
+            player = cells[player.col ][player.row - 1];
+        }
+    }
+    public void moveDown(){
+
+        if (!player.bottomWall){
+            player = cells[player.col ][player.row + 1];
+        }
+    }
+    public void moveLeft(){
+        if (!player.leftWall){
+            player = cells[player.col - 1][player.row];
+        }
+    }
+    public void moveRight(){
+        if (!player.rightWall){
+            player = cells[player.col + 1][player.row];
+        }
+    }
+    public boolean hasWon(){
+        if (player == exit){
+            return true;
+        }
+        return false;
+    }
+
     private void createMaze(){
         Stack<Cell> stack = new Stack<>();
         Cell current, next;
@@ -190,4 +222,14 @@ public class GameView extends View {
             this.row = row;
         }
     }
+    public void recreate(int columns, int rows){
+        COLS = columns;
+        ROWS = rows;
+        createMaze();
+    }
+    public void restartLevel(){
+        player = cells[0][0];
+    }
+
+
 }

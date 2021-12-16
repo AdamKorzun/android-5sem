@@ -1,36 +1,23 @@
 package com.example.lab03;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
-import android.media.projection.MediaProjection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.MediaController;
-import android.widget.VideoView;
+
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -104,9 +91,6 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = Uri.fromFile(new File(path));
             String title = c.getString(0);
             String author = c.getString(1);
-            if (author == null){
-                author = "Unknown artist";
-            }
             int duration = c.getInt(2);
             songVideos.add(new MediaSongVid(title, author, "mp3", duration, uri));
 
@@ -141,13 +125,9 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = Uri.fromFile(new File(path));
             String title = c.getString(0);
             String author = c.getString(1);
-            if (author == null){
-                author = "Unknown artist";
-            }
+
             int duration = c.getInt(2);
             songVideos.add(new MediaSongVid(title, author, "mp4", duration, uri));
-
-
         }
         while(c.moveToNext());
         c.close();
