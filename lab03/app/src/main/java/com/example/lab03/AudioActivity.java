@@ -4,14 +4,18 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +23,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,7 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AudioActivity extends AppCompatActivity {
+public class AudioActivity extends AppCompatActivity implements ServiceConnection {
     SeekBar mSeekBar;
     Button backFifteen, forwardFifteen, pause, next, last;
     TextView songName;
@@ -42,12 +47,24 @@ public class AudioActivity extends AppCompatActivity {
     MediaPlayer mPlayer;
     GestureDetector gestureDetector;
     int currentIndex;
+    MediaService mediaService;
     ArrayList<MediaSongVid> songVideos;
+    @SuppressLint("WrongConstant")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent2= new Intent(this, MediaService.class);
+        bindService(intent2, this, BIND_AUTO_CREATE);
         setContentView(R.layout.activity_audio);
-
+        Intent intent = new Intent(getApplicationContext(), MediaService.class);
+        Bundle extras = getIntent().getExtras();
+        songVideos = (ArrayList<MediaSongVid>)extras.get("MediaList");
+        currentIndex = extras.getInt("CurrentIndex");
+        MediaSongVid song = (MediaSongVid) extras.get("CurrentSong");
+        intent.setAction(MediaService.ACTION_PLAY);
+        intent.putExtra("Song", song);
+//        intent.addFlags(PendingIntent.FLAG_IMMUTABLE);
+        startService(intent);
         songName = findViewById(R.id.songName);
         mSeekBar = findViewById(R.id.seekBar);
         backFifteen = findViewById(R.id.backFifteen);
@@ -55,28 +72,26 @@ public class AudioActivity extends AppCompatActivity {
         pause  = findViewById(R.id.pauseButton);
         next = findViewById(R.id.forwardButton);
         last = findViewById(R.id.backButton);
-        Bundle extras = getIntent().getExtras();
-        songVideos = (ArrayList<MediaSongVid>)extras.get("MediaList");
-        currentIndex = extras.getInt("CurrentIndex");
-        MediaSongVid song = (MediaSongVid) extras.get("CurrentSong");
-        mPlayer =   MediaPlayer.create(getApplicationContext(), song.getUri());
-        mPlayer.start();
+
         setView(song);
-        mSeekBar.setMax(mPlayer.getDuration());
-        mSeekbarUpdateHandler.postDelayed(runnable, 0);
-//        Intent intent = new Intent(getApplicationContext(), MediaService.class);
-//        intent.setAction(MediaService.ACTION_PLAY);
-//        startService(intent);
+
+
+
 
         pause.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 if (mPlayer.isPlaying()){
+                    mediaService.buildNotification( mediaService.generateAction( android.R.drawable.ic_media_play, "Play", MediaService.ACTION_PLAY ) );
+
                     mPlayer.pause();
                     pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_play));
                 }
                 else{
                     mPlayer.start();
+                    mediaService.buildNotification( mediaService.generateAction( android.R.drawable.ic_media_pause, "Pause", MediaService.ACTION_PAUSE ) );
+
                     pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
 
                 }
@@ -146,8 +161,6 @@ public class AudioActivity extends AppCompatActivity {
                 while (i  >= 0){
                     System.out.println(songVideos.get(i).getFormat());
                     if (songVideos.get(i).getFormat().equals("mp3")){
-                        System.out.println("Hi");
-
                         changeSong(i);
                         currentIndex = i;
                         break;
@@ -218,6 +231,7 @@ public class AudioActivity extends AppCompatActivity {
 //            notificationDialog();
 //        }
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void changeSong(int index){
         MediaSongVid item = songVideos.get(index);
         setView(item);
@@ -236,6 +250,10 @@ public class AudioActivity extends AppCompatActivity {
 
         mPlayer.start();
         pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
+        mediaService.setSong(item);
+        mediaService.buildNotification( mediaService.generateAction( android.R.drawable.ic_media_pause, "Pause", MediaService.ACTION_NEXT ) );
+
+//        mediaService.buildNotification(MediaService.ACTION_NEXT);
 
     }
 
@@ -278,8 +296,40 @@ public class AudioActivity extends AppCompatActivity {
         mPlayer.pause();
         mSeekbarUpdateHandler.removeCallbacks(runnable);
         mPlayer.release();
+        Intent intent = new Intent(getApplicationContext(), mediaService.getClass());
+        stopService(intent);
         finish();
     }
+    public void onBindingComplete(){
+//        Toast.makeText(getApplicationContext(), "Binding complete", Toast.LENGTH_SHORT).show();
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                int i = currentIndex + 1;
+                while (i  < songVideos.size()){
+                    if (songVideos.get(i).getFormat().equals("mp3")){
+                        changeSong(i);
+                        currentIndex = i;
+                        break;
+                    }
+                    i += 1;
+                }
+            }
+        });
+        changeSong(currentIndex);
+//        mSeekBar.setMax(mPlayer.getDuration());
+//        mSeekbarUpdateHandler.postDelayed(runnable, 0);
+    }
 
+    @Override
+    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        mediaService = ((MediaService.customBinder)(iBinder)).getMediaService();
+        mPlayer = mediaService.getmMediaPlayer();
+        onBindingComplete();
+    }
 
+    @Override
+    public void onServiceDisconnected(ComponentName componentName) {
+
+    }
 }

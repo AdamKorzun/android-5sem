@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        askPermission();
+        askPermissionNotification();
         getAllAudio();
         findAllVideos();
         ListView mediaList = findViewById(R.id.mediaList);
@@ -53,13 +55,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        askPermission();
 
 
     }
     private void askPermission(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQuEST_CODE);
+        }
+    }
+    private void askPermissionNotification(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE}, REQuEST_CODE);
         }
     }
 
@@ -85,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         do
         {
             String path = c.getString(3);
+            System.out.println(path);
             if (!path.contains("/Music/")){
                 continue;
             }
@@ -111,9 +118,10 @@ public class MainActivity extends AppCompatActivity {
         };
 
         Cursor c=getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null, null);
-        if (c == null){
+        if (c.getCount()  == 0){
             return;
         }
+
         c.moveToFirst();
         do
         {
