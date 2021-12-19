@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">lab01</string>
+    <string name="input">Ввод</string>
+    <string name="inputError">Неправильные данные</string>
+
+</resources>
