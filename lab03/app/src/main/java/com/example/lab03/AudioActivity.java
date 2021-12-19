@@ -44,7 +44,7 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
     boolean playing = false;
     ArrayList<Uri> songs;
     Handler mSeekbarUpdateHandler = new Handler();
-    MediaPlayer mPlayer;
+//    MediaPlayer mPlayer;
     GestureDetector gestureDetector;
     int currentIndex;
     MediaService mediaService;
@@ -82,16 +82,16 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
-                if (mPlayer.isPlaying()){
+                if (mediaService.getmMediaPlayer().isPlaying()){
                     mediaService.buildNotification( mediaService.generateAction( android.R.drawable.ic_media_play, "Play", MediaService.ACTION_PLAY ) );
 
-                    mPlayer.pause();
+                    mediaService.getmMediaPlayer().pause();
                     pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_play));
                 }
                 else{
-                    mPlayer.start();
+//                    mPlayer.start();
                     mediaService.buildNotification( mediaService.generateAction( android.R.drawable.ic_media_pause, "Pause", MediaService.ACTION_PAUSE ) );
-
+                    mediaService.getmMediaPlayer().start();
                     pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
 
                 }
@@ -101,30 +101,30 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
             @Override
             public void onClick(View view) {
 
-                mPlayer.pause();
-                mPlayer.seekTo(mPlayer.getCurrentPosition() + 15000);
-                mPlayer.start();
+                mediaService.getmMediaPlayer().pause();
+                mediaService.getmMediaPlayer().seekTo(mediaService.getmMediaPlayer().getCurrentPosition() + 15000);
+                mediaService.getmMediaPlayer().start();
             }
         });
         backFifteen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mPlayer.pause();
-                if (mPlayer.getCurrentPosition() - 15000 < 0){
-                    mPlayer.seekTo(0);
+                mediaService.getmMediaPlayer().pause();
+                if (mediaService.getmMediaPlayer().getCurrentPosition() - 15000 < 0){
+                    mediaService.getmMediaPlayer().seekTo(0);
                 }
                 else{
-                    mPlayer.seekTo(mPlayer.getCurrentPosition() - 15000);
+                    mediaService.getmMediaPlayer().seekTo(mediaService.getmMediaPlayer().getCurrentPosition() - 15000);
 
                 }
-                mPlayer.start();
+                mediaService.getmMediaPlayer().start();
             }
         });
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser)
-                    mPlayer.seekTo(progress);
+                    mediaService.getmMediaPlayer().seekTo(progress);
             }
 
             @Override
@@ -139,6 +139,7 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
 
         });
         next.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 int i = currentIndex + 1;
@@ -155,6 +156,7 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
             }
         });
         last.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 int i = currentIndex - 1;
@@ -172,6 +174,7 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
         ImageView iv = findViewById(R.id.songImage);
         final float[] x = new float[2];
         iv.setOnTouchListener(new View.OnTouchListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 switch(motionEvent.getAction()){
@@ -237,18 +240,18 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
         setView(item);
         mSeekbarUpdateHandler.removeCallbacks(runnable);
 
-        mPlayer.reset();
+        mediaService.getmMediaPlayer().reset();
         try {
-            mPlayer.setDataSource(getApplicationContext(), item.getUri());
-            mPlayer.prepare();
+            mediaService.getmMediaPlayer().setDataSource(getApplicationContext(), item.getUri());
+            mediaService.getmMediaPlayer().prepare();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mSeekBar.setMax(mPlayer.getDuration());
+        mSeekBar.setMax(mediaService.getmMediaPlayer().getDuration());
         mSeekbarUpdateHandler.postDelayed(runnable, 0);
 
-        mPlayer.start();
+        mediaService.getmMediaPlayer().start();
         pause.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.ic_pause));
         mediaService.setSong(item);
         mediaService.buildNotification( mediaService.generateAction( android.R.drawable.ic_media_pause, "Pause", MediaService.ACTION_NEXT ) );
@@ -281,7 +284,7 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            mSeekBar.setProgress(mPlayer.getCurrentPosition());
+            mSeekBar.setProgress(mediaService.getmMediaPlayer().getCurrentPosition());
             mSeekbarUpdateHandler.postDelayed(this, 50);
 
         }
@@ -293,16 +296,18 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
     @Override
     public void onBackPressed()
     {
-        mPlayer.pause();
+        mediaService.getmMediaPlayer().pause();
         mSeekbarUpdateHandler.removeCallbacks(runnable);
-        mPlayer.release();
+        mediaService.getmMediaPlayer().release();
         Intent intent = new Intent(getApplicationContext(), mediaService.getClass());
         stopService(intent);
         finish();
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onBindingComplete(){
 //        Toast.makeText(getApplicationContext(), "Binding complete", Toast.LENGTH_SHORT).show();
-        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mediaService.getmMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 int i = currentIndex + 1;
@@ -321,10 +326,11 @@ public class AudioActivity extends AppCompatActivity implements ServiceConnectio
 //        mSeekbarUpdateHandler.postDelayed(runnable, 0);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         mediaService = ((MediaService.customBinder)(iBinder)).getMediaService();
-        mPlayer = mediaService.getmMediaPlayer();
+//        mPlayer = mediaService.getmMediaPlayer();
         onBindingComplete();
     }
 

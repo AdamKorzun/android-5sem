@@ -72,18 +72,18 @@ public class MediaService extends Service {
             song = (MediaSongVid) intent.getExtras().get("Song");
         }
 //        Toast.makeText(getApplicationContext(), "intent called", Toast.LENGTH_SHORT).show();
-        String action = intent.getAction();
-        if( action.equalsIgnoreCase( ACTION_PLAY ) ) {
-            mController.getTransportControls().play();
-        } else if( action.equalsIgnoreCase( ACTION_PAUSE ) ) {
-            mController.getTransportControls().pause();
-        } else if( action.equalsIgnoreCase( ACTION_PREVIOUS ) ) {
-            mController.getTransportControls().skipToPrevious();
-        } else if( action.equalsIgnoreCase( ACTION_NEXT ) ) {
-            mController.getTransportControls().skipToNext();
-        } else if( action.equalsIgnoreCase( ACTION_STOP ) ) {
-            mController.getTransportControls().stop();
-        }
+//        String action = intent.getAction();
+//        if( action.equalsIgnoreCase( ACTION_PLAY ) ) {
+//            mController.getTransportControls().play();
+//        } else if( action.equalsIgnoreCase( ACTION_PAUSE ) ) {
+//            mController.getTransportControls().pause();
+//        } else if( action.equalsIgnoreCase( ACTION_PREVIOUS ) ) {
+//            mController.getTransportControls().skipToPrevious();
+//        } else if( action.equalsIgnoreCase( ACTION_NEXT ) ) {
+//            mController.getTransportControls().skipToNext();
+//        } else if( action.equalsIgnoreCase( ACTION_STOP ) ) {
+//            mController.getTransportControls().stop();
+//        }
     }
 
     public Notification.Action generateAction(int icon, String title, String intentAction ) {
@@ -133,10 +133,10 @@ public class MediaService extends Service {
         }
 
 
-        builder.addAction( generateAction( android.R.drawable.ic_media_previous, "Previous", ACTION_PREVIOUS ) );
-        builder.addAction( action );
-        builder.addAction( generateAction( android.R.drawable.ic_media_next, "Next", ACTION_NEXT ) );
-        style.setShowActionsInCompactView(0,1,2);
+//        builder.addAction( generateAction( android.R.drawable.ic_media_previous, "Previous", ACTION_PREVIOUS ) );
+//        builder.addAction( action );
+//        builder.addAction( generateAction( android.R.drawable.ic_media_next, "Next", ACTION_NEXT ) );
+//        style.setShowActionsInCompactView(0,1,2);
         notification = builder.build();
         notificationManager.notify( 1, notification );
 
@@ -178,7 +178,7 @@ public class MediaService extends Service {
                                  public void onPause() {
                                      super.onPause();
                                      mMediaPlayer.pause();
-
+                                     Toast.makeText(getApplicationContext(), String.valueOf(mMediaPlayer.getDuration()), Toast.LENGTH_SHORT).show();
                                      buildNotification(generateAction(android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
                                  }
 
